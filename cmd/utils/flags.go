@@ -109,6 +109,8 @@ GLOBAL OPTIONS:
 
 // NewApp creates an app with sane defaults.
 func NewApp(gitCommit, gitDate, usage string) *cli.App {
+
+	fmt.Print("tianxiang test log, into cmd- util flages \n")
 	app := cli.NewApp()
 	app.Name = filepath.Base(os.Args[0])
 	app.Author = ""

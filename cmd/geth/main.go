@@ -57,6 +57,7 @@ var (
 	app = utils.NewApp(gitCommit, gitDate, "the go-ethereum command line interface")
 	// flags that configure the node
 	nodeFlags = []cli.Flag{
+
 		utils.IdentityFlag,
 		utils.UnlockedAccountFlag,
 		utils.PasswordFileFlag,
@@ -191,6 +192,8 @@ var (
 )
 
 func init() {
+
+	fmt.Print("tianxiang test log, into geth init\n")
 	// Initialize the CLI app and start Geth
 	app.Action = geth
 	app.HideVersion = true // we have a command to print the version
@@ -243,7 +246,11 @@ func init() {
 }
 
 func main() {
+	//error 1
+	fmt.Print("tianxiang test log, into geth main\n")
 	if err := app.Run(os.Args); err != nil {
+		//error 2
+		fmt.Print("tianxiang test log, into geth main error\n")
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -252,8 +259,11 @@ func main() {
 // prepare manipulates memory cache allowance and setups metric system.
 // This function should be called before launching devp2p stack.
 func prepare(ctx *cli.Context) {
+	fmt.Print("tianxiang test log, into geth prepare 1 \n")
+
 	// If we're a full node on mainnet without --cache specified, bump default cache allowance
 	if ctx.GlobalString(utils.SyncModeFlag.Name) != "light" && !ctx.GlobalIsSet(utils.CacheFlag.Name) && !ctx.GlobalIsSet(utils.NetworkIdFlag.Name) {
+		fmt.Print("tianxiang test log, into geth prepare full node \n")
 		// Make sure we're not on any supported preconfigured testnet either
 		if !ctx.GlobalIsSet(utils.TestnetFlag.Name) && !ctx.GlobalIsSet(utils.RinkebyFlag.Name) && !ctx.GlobalIsSet(utils.GoerliFlag.Name) && !ctx.GlobalIsSet(utils.DeveloperFlag.Name) {
 			// Nope, we're really on mainnet. Bump that cache up!
@@ -263,14 +273,18 @@ func prepare(ctx *cli.Context) {
 	}
 	// If we're running a light client on any network, drop the cache to some meaningfully low amount
 	if ctx.GlobalString(utils.SyncModeFlag.Name) == "light" && !ctx.GlobalIsSet(utils.CacheFlag.Name) {
+		fmt.Print("tianxiang test log, into geth prepare - light\n")
+		fmt.Print("provided", ctx.GlobalInt(utils.CacheFlag.Name), "\n")
 		log.Info("Dropping default light client cache", "provided", ctx.GlobalInt(utils.CacheFlag.Name), "updated", 128)
 		ctx.GlobalSet(utils.CacheFlag.Name, strconv.Itoa(128))
 	}
+	fmt.Print("tianxiang test log, into geth prepare 2 \n")
 	// Cap the cache allowance and tune the garbage collector
 	var mem gosigar.Mem
 	// Workaround until OpenBSD support lands into gosigar
 	// Check https://github.com/elastic/gosigar#supported-platforms
 	if runtime.GOOS != "openbsd" {
+		fmt.Print("tianxiang test log, into geth prepare 3 \n")
 		if err := mem.Get(); err == nil {
 			allowance := int(mem.Total / 1024 / 1024 / 3)
 			if cache := ctx.GlobalInt(utils.CacheFlag.Name); cache > allowance {
@@ -279,6 +293,8 @@ func prepare(ctx *cli.Context) {
 			}
 		}
 	}
+	fmt.Print("tianxiang test log, into geth prepare 4 \n")
+
 	// Ensure Go's GC ignores the database cache for trigger percentage
 	cache := ctx.GlobalInt(utils.CacheFlag.Name)
 	gogc := math.Max(20, math.Min(100, 100/(float64(cache)/1024)))
@@ -291,12 +307,17 @@ func prepare(ctx *cli.Context) {
 
 	// Start system runtime metrics collection
 	go metrics.CollectProcessMetrics(3 * time.Second)
+
+	fmt.Print("tianxiang test log, into geth prepare 5 \n")
 }
 
 // geth is the main entry point into the system if no special subcommand is ran.
 // It creates a default node based on the command line arguments and runs it in
 // blocking mode, waiting for it to be shut down.
 func geth(ctx *cli.Context) error {
+
+	fmt.Print("tianxiang test log, into geth in geth func\n")
+
 	if args := ctx.Args(); len(args) > 0 {
 		return fmt.Errorf("invalid command: %q", args[0])
 	}
@@ -312,6 +333,9 @@ func geth(ctx *cli.Context) error {
 // it unlocks any requested accounts, and starts the RPC/IPC interfaces and the
 // miner.
 func startNode(ctx *cli.Context, stack *node.Node) {
+
+	fmt.Print("tianxiang test log, into geth startnode 1 \n")
+
 	debug.Memsize.Add("node", stack)
 
 	// Start up the node itself
@@ -331,9 +355,14 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	}
 	ethClient := ethclient.NewClient(rpcClient)
 
+	fmt.Print("tianxiang test log, into geth startnode 2 \n")
+
 	// Set contract backend for ethereum service if local node
 	// is serving LES requests.
 	if ctx.GlobalInt(utils.LightLegacyServFlag.Name) > 0 || ctx.GlobalInt(utils.LightServeFlag.Name) > 0 {
+
+		fmt.Print("tianxiang test log, into geth startnode 3 \n")
+
 		var ethService *eth.Ethereum
 		if err := stack.Service(&ethService); err != nil {
 			utils.Fatalf("Failed to retrieve ethereum service: %v", err)
@@ -343,6 +372,9 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	// Set contract backend for les service if local node is
 	// running as a light client.
 	if ctx.GlobalString(utils.SyncModeFlag.Name) == "light" {
+
+		fmt.Print("tianxiang test log, into geth startnode 4\n")
+
 		var lesService *les.LightEthereum
 		if err := stack.Service(&lesService); err != nil {
 			utils.Fatalf("Failed to retrieve light ethereum service: %v", err)
@@ -351,6 +383,9 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	}
 
 	go func() {
+
+		fmt.Print("tianxiang test log, into geth startnode 5 \n")
+
 		// Open any wallets already attached
 		for _, wallet := range stack.AccountManager().Wallets() {
 			if err := wallet.Open(""); err != nil {
@@ -386,6 +421,8 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	// Spawn a standalone goroutine for status synchronization monitoring,
 	// close the node when synchronization is complete if user required.
 	if ctx.GlobalBool(utils.ExitWhenSyncedFlag.Name) {
+
+		fmt.Print("tianxiang test log, into geth startnode 6 \n")
 		go func() {
 			sub := stack.EventMux().Subscribe(downloader.DoneEvent{})
 			defer sub.Unsubscribe()
@@ -409,6 +446,8 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 
 	// Start auxiliary services if enabled
 	if ctx.GlobalBool(utils.MiningEnabledFlag.Name) || ctx.GlobalBool(utils.DeveloperFlag.Name) {
+
+		fmt.Print("tianxiang test log, into geth startnode 7 \n")
 		// Mining only makes sense if a full Ethereum node is running
 		if ctx.GlobalString(utils.SyncModeFlag.Name) == "light" {
 			utils.Fatalf("Light clients do not support mining")
@@ -436,6 +475,8 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 
 // unlockAccounts unlocks any account specifically requested.
 func unlockAccounts(ctx *cli.Context, stack *node.Node) {
+
+	fmt.Print("tianxiang test log, into geth unlockAccount  \n")
 	var unlocks []string
 	inputs := strings.Split(ctx.GlobalString(utils.UnlockedAccountFlag.Name), ",")
 	for _, input := range inputs {
