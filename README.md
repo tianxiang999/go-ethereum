@@ -1,35 +1,38 @@
-## Go Ethereum
+## BC-CDN
 
-Official Golang implementation of the Ethereum protocol.
 
-[![API Reference](
-https://camo.githubusercontent.com/915b7be44ada53c290eb157634330494ebe3e30a/68747470733a2f2f676f646f632e6f72672f6769746875622e636f6d2f676f6c616e672f6764646f3f7374617475732e737667
-)](https://godoc.org/github.com/ethereum/go-ethereum)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ethereum/go-ethereum)](https://goreportcard.com/report/github.com/ethereum/go-ethereum)
-[![Travis](https://travis-ci.org/ethereum/go-ethereum.svg?branch=master)](https://travis-ci.org/ethereum/go-ethereum)
-[![Discord](https://img.shields.io/badge/discord-join%20chat-blue.svg)](https://discord.gg/nthXNEv)
+## Build from source
 
-Automated builds are available for stable releases and the unstable master branch. Binary
-archives are published at https://geth.ethereum.org/downloads/.
-
-## Building the source
-
-For prerequisites and detailed build instructions please read the [Installation Instructions](https://github.com/ethereum/go-ethereum/wiki/Building-Ethereum) on the wiki.
-
-Building `geth` requires both a Go (version 1.10 or later) and a C compiler. You can install
-them using your favourite package manager. Once the dependencies are installed, run
+### GO Ethereum 
+Install go1.13.6.linux-amd64 and set the **$GOPATH**. Test by running 
 
 ```shell
-make geth
+go version
 ```
 
-or, to build the full suite of utilities:
+### Clone project
+Must have the working copy under **$GOPATH/src/github.com/ethereum/go-ethereum**
+
+Clone by running 
+```shell
+git clone git@github.com:tianxiang999/go-ethereum.git $GOPATH/src/github.com/ethereum/go-ethereum
+```
+
+### Build Executables
+Switch to the go-ethereum repository root directory. Build all code by 
 
 ```shell
-make all
+go install -v ./...
 ```
 
+Executables are under **$GOPATH/bin**
+
+### Test 
+
+Test by running **geth --help** or **geth -h**
 ## Executables
+
+
 
 The go-ethereum project comes with several wrappers/executables found in the `cmd`
 directory.
